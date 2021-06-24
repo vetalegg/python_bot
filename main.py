@@ -13,19 +13,25 @@ import random
 button_currency = KeyboardButton('Курс валют')
 button_news = KeyboardButton('Случайная новость с панорамы')
 button_covid = KeyboardButton('Статистика COVID19 в Москве')
+button_coin = KeyboardButton('Подбросить монетку')
+button_help = KeyboardButton('Помощь')
 
 mainWindowKb = ReplyKeyboardMarkup(resize_keyboard=True)
-mainWindowKb.add(button_currency).row(button_news).row(button_covid)
+mainWindowKb.add(button_currency).row(button_news).row(button_covid).row(button_coin).row(button_help)
 
 API_TOKEN = '1895740117:AAFTC3TFG1UdzOytWvnLyQPl7Y3kVYnQeEk'
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
 
-@dp.message_handler(commands=['start'])
+@dp.message_handler(commands=['start', 'help'])
 async def start_process(message: types.Message):
-    await bot.send_message(message.from_user.id, 'Используйте кнопки под полем ввода для навигации,'
-                                                 'а так же команду /track для отслеживания отправлений', reply_markup=mainWindowKb)
+    await bot.send_message(message.from_user.id, 'Привет! Я бот, который умеет:\n'
+                                                 '■Рассказать о курсе валют\n'
+                                                 '■Выдать случайную юмористическую новость ИА "Панорама"\n'
+                                                 '■Представить статистику заболеваемости COVID-19 в Москве\n'
+                                                 '■Подбросить монетку для принятия сложных решений ',
+                           reply_markup=mainWindowKb)
 
 
 @dp.message_handler(lambda message: message.text == "Статистика COVID19 в Москве")
@@ -59,11 +65,31 @@ async def panorama_message(message: types.Message):
     await bot.send_message(message.from_user.id, news_header)
 
 
+@dp.message_handler(lambda message: message.text == "Подбросить монетку")
+async def panorama_message(message: types.Message):
+    coin_state = random.randint(0, 1)
+    if coin_state == 0:
+        coin_state = 'Орел'
+    else:
+        coin_state = 'Решка'
+    await bot.send_message(message.from_user.id, coin_state)
+
+
 @dp.message_handler(commands=['track'])
 async def track(message: types.Message):
     track_code = await check_track(message.get_args())
     if track_code and track_code != '':
         await bot.send_message(message.from_user.id, track_code)
+
+
+@dp.message_handler(lambda message: message.text == "Помощь")
+async def info_message(message: types.Message):
+    await bot.send_message(message.from_user.id, 'Привет! Я бот, который умеет:\n'
+                                                 '■Рассказать о курсе валют\n'
+                                                 '■Выдать случайную юмористическую новость ИА "Панорама"\n'
+                                                 '■Представить статистику заболеваемости COVID-19 в Москве\n'
+                                                 '■Подбросить монетку для принятия сложных решений ',
+                           reply_markup=mainWindowKb)
 
 
 async def check_track(track):
